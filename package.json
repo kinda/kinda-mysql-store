@@ -1,0 +1,21 @@
+{
+  "name": "kinda-store-mysql",
+  "version": "0.1.0",
+  "description": "...",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kinda/kinda-store-mysql"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Manuel Vila <mvila@3base.com>",
+  "license": "MIT",
+  "dependencies": {
+    "co-wait": "0.0.0",
+    "kinda-mysql": "https://github.com/kinda/kinda-mysql/tarball/master",
+    "kinda-store-sql": "https://github.com/kinda/kinda-store-sql/tarball/master",
+    "lodash": "^2.4.1"
+  }
+}
