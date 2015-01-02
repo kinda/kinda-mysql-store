@@ -18,8 +18,8 @@
   "license": "MIT",
   "dependencies": {
     "co-wait": "0.0.0",
-    "kinda-mysql": "kinda/kinda-mysql",
-    "kinda-store-sql": "kinda/kinda-store-sql",
+    "kinda-mysql": "^0.1.0",
+    "kinda-store-sql": "^0.1.0",
     "lodash": "^2.4.1"
   }
 }
