@@ -1,4 +1,4 @@
-# kinda-store-mysql [![Build Status](https://travis-ci.org/kinda/kinda-store-mysql.svg?branch=master)](https://travis-ci.org/kinda/kinda-store-mysql)
+# kinda-mysql-store [![Build Status](https://travis-ci.org/kinda/kinda-mysql-store.svg?branch=master)](https://travis-ci.org/kinda/kinda-mysql-store)
 
 ```js
 // TODO: documentation!

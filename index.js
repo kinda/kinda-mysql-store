@@ -3,7 +3,7 @@
 var _ = require('lodash');
 var wait = require('co-wait');
 var mysql = require('kinda-mysql').create();
-var SQLStore = require('kinda-store-sql');
+var SQLStore = require('kinda-sql-store');
 
 var MySQLStore = SQLStore.extend('MySQLStore', function() {
   this.setCreator(function(url, options) {
