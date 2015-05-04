@@ -28,8 +28,7 @@ var MySQLStore = SQLStore.extend('MySQLStore', function() {
   };
 
   this.transaction = function *(fn, options) {
-    if (this.store !== this)
-      return yield fn(this); // we are already in a transaction
+    if (this.isInsideTransaction()) return yield fn(this);
     yield this.initializeDatabase();
     var connection = yield this.connection.getConnection();
     try {
@@ -57,6 +56,10 @@ var MySQLStore = SQLStore.extend('MySQLStore', function() {
     } finally {
       connection.release();
     }
+  };
+
+  this.isInsideTransaction = function() {
+    return this !== this.store;
   };
 
   this.close = function *() {
