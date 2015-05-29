@@ -2,9 +2,9 @@
 
 let wait = require('co-wait');
 let mysql = require('kinda-mysql').create();
-let SQLStore = require('kinda-sql-store');
+let KindaSQLStore = require('kinda-sql-store');
 
-let MySQLStore = SQLStore.extend('MySQLStore', function() {
+let KindaMySQLStore = KindaSQLStore.extend('KindaMySQLStore', function() {
   this.creator = function(options = {}) {
     this.connection = mysql.createPool(options.url);
     this.connection.on('connection', function(connection) {
@@ -66,4 +66,4 @@ let MySQLStore = SQLStore.extend('MySQLStore', function() {
   };
 });
 
-module.exports = MySQLStore;
+module.exports = KindaMySQLStore;
