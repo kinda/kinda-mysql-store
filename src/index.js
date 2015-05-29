@@ -1,44 +1,43 @@
 'use strict';
 
-var _ = require('lodash');
-var wait = require('co-wait');
-var mysql = require('kinda-mysql').create();
-var SQLStore = require('kinda-sql-store');
+let wait = require('co-wait');
+let mysql = require('kinda-mysql').create();
+let SQLStore = require('kinda-sql-store');
 
-var MySQLStore = SQLStore.extend('MySQLStore', function() {
-  this.setCreator(function(url, options) {
-    this.connection = mysql.createPool(url);
+let MySQLStore = SQLStore.extend('MySQLStore', function() {
+  this.creator = function(options = {}) {
+    this.connection = mysql.createPool(options.url);
     this.connection.on('connection', function(connection) {
-      var sql = 'SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE';
+      let sql = 'SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE';
       connection.query(sql);
     });
     this.store = this;
     this.setOptions(options);
-  });
+  };
 
   this.initializeDatabase = function *() {
     if (this.store.databaseHasBeenInitialized) return;
-    var sql = "CREATE TABLE IF NOT EXISTS `pairs` (\
-      `key` longblob NOT NULL,\
-      `value` longblob,\
-      PRIMARY KEY (`key`(256))\
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+    let sql = 'CREATE TABLE IF NOT EXISTS `pairs` (';
+    sql += '`key` longblob NOT NULL, ';
+    sql += '`value` longblob, ';
+    sql += 'PRIMARY KEY (`key`(256))';
+    sql += ') ENGINE=InnoDB DEFAULT CHARSET=utf8;';
     yield this.connection.query(sql);
     this.store.databaseHasBeenInitialized = true;
   };
 
-  this.transaction = function *(fn, options) {
+  this.transaction = function *(fn) {
     if (this.isInsideTransaction()) return yield fn(this);
     yield this.initializeDatabase();
-    var connection = yield this.connection.getConnection();
+    let connection = yield this.connection.getConnection();
     try {
-      var transaction = Object.create(this);
+      let transaction = Object.create(this);
       transaction.connection = connection;
-      var retries = 0;
+      let retries = 0;
       while (retries < 30) {
         yield connection.query('START TRANSACTION');
         try {
-          var res = yield fn(transaction);
+          let res = yield fn(transaction);
           yield connection.query('COMMIT');
           return res;
         } catch (err) {
