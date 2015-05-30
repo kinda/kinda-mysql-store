@@ -23,4 +23,46 @@ suite('KindaMySQLStore', function() {
     hasBeenDeleted = yield store.del(key, { errorIfMissing: false });
     assert.isFalse(hasBeenDeleted);
   });
+
+  test('change made inside a commited transaction', function *() {
+    let key = ['users', 'mvila'];
+    let user = { firstName: 'Manu', age: 42 };
+    yield store.put(key, user);
+    assert.isFalse(store.isInsideTransaction());
+    yield store.transaction(function *(tr) {
+      assert.isTrue(tr.isInsideTransaction());
+      user = yield tr.get(key);
+      assert.strictEqual(user.firstName, 'Manu');
+      user.firstName = 'Vince';
+      yield tr.put(key, user);
+      user = yield tr.get(key);
+      assert.strictEqual(user.firstName, 'Vince');
+    });
+    user = yield store.get(key);
+    assert.strictEqual(user.firstName, 'Vince');
+    yield store.del(key);
+  });
+
+  test('change made inside an aborted transaction', function *() {
+    let key = ['users', 'mvila'];
+    let user = { firstName: 'Manu', age: 42 };
+    yield store.put(key, user);
+    try {
+      assert.isFalse(store.isInsideTransaction());
+      yield store.transaction(function *(tr) {
+        assert.isTrue(tr.isInsideTransaction());
+        user = yield tr.get(key);
+        assert.strictEqual(user.firstName, 'Manu');
+        user.firstName = 'Vince';
+        yield tr.put(key, user);
+        user = yield tr.get(key);
+        assert.strictEqual(user.firstName, 'Vince');
+        throw new Error('something is wrong');
+      });
+    } catch (err) {
+      // noop
+    }
+    user = yield store.get(key);
+    assert.strictEqual(user.firstName, 'Manu');
+  });
 });
