@@ -27,7 +27,7 @@ let KindaMySQLStore = KindaSQLStore.extend('KindaMySQLStore', function() {
   };
 
   this.transaction = function *(fn) {
-    if (this.isInsideTransaction()) return yield fn(this);
+    if (this.isInsideTransaction) return yield fn(this);
     yield this.initializeDatabase();
     let connection = yield this.connection.getConnection();
     try {
@@ -57,9 +57,11 @@ let KindaMySQLStore = KindaSQLStore.extend('KindaMySQLStore', function() {
     }
   };
 
-  this.isInsideTransaction = function() {
-    return this !== this.store;
-  };
+  Object.defineProperty(this, 'isInsideTransaction', {
+    get() {
+      return this !== this.store;
+    }
+  });
 
   this.close = function *() {
     yield this.connection.end();

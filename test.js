@@ -28,9 +28,9 @@ suite('KindaMySQLStore', function() {
     let key = ['users', 'mvila'];
     let user = { firstName: 'Manu', age: 42 };
     yield store.put(key, user);
-    assert.isFalse(store.isInsideTransaction());
+    assert.isFalse(store.isInsideTransaction);
     yield store.transaction(function *(tr) {
-      assert.isTrue(tr.isInsideTransaction());
+      assert.isTrue(tr.isInsideTransaction);
       user = yield tr.get(key);
       assert.strictEqual(user.firstName, 'Manu');
       user.firstName = 'Vince';
@@ -48,9 +48,9 @@ suite('KindaMySQLStore', function() {
     let user = { firstName: 'Manu', age: 42 };
     yield store.put(key, user);
     try {
-      assert.isFalse(store.isInsideTransaction());
+      assert.isFalse(store.isInsideTransaction);
       yield store.transaction(function *(tr) {
-        assert.isTrue(tr.isInsideTransaction());
+        assert.isTrue(tr.isInsideTransaction);
         user = yield tr.get(key);
         assert.strictEqual(user.firstName, 'Manu');
         user.firstName = 'Vince';
