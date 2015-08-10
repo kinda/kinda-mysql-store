@@ -1,7 +1,7 @@
 'use strict';
 
-let wait = require('co-wait');
 let mysql = require('kinda-mysql').create();
+let util = require('kinda-util').create();
 let KindaSQLStore = require('kinda-sql-store');
 
 let KindaMySQLStore = KindaSQLStore.extend('KindaMySQLStore', function() {
@@ -15,37 +15,37 @@ let KindaMySQLStore = KindaSQLStore.extend('KindaMySQLStore', function() {
     this.setOptions(options);
   };
 
-  this.initializeDatabase = function *() {
+  this.initializeDatabase = async function() {
     if (this.store.databaseHasBeenInitialized) return;
     let sql = 'CREATE TABLE IF NOT EXISTS `pairs` (';
     sql += '`key` longblob NOT NULL, ';
     sql += '`value` longblob, ';
     sql += 'PRIMARY KEY (`key`(256))';
     sql += ') ENGINE=InnoDB DEFAULT CHARSET=utf8;';
-    yield this.connection.query(sql);
+    await this.connection.query(sql);
     this.store.databaseHasBeenInitialized = true;
   };
 
-  this.transaction = function *(fn) {
-    if (this.isInsideTransaction) return yield fn(this);
-    yield this.initializeDatabase();
-    let connection = yield this.connection.getConnection();
+  this.transaction = async function(fn) {
+    if (this.isInsideTransaction) return await fn(this);
+    await this.initializeDatabase();
+    let connection = await this.connection.getConnection();
     try {
       let transaction = Object.create(this);
       transaction.connection = connection;
       let retries = 0;
       while (retries < 30) {
-        yield connection.query('START TRANSACTION');
+        await connection.query('START TRANSACTION');
         try {
-          let res = yield fn(transaction);
-          yield connection.query('COMMIT');
+          let res = await fn(transaction);
+          await connection.query('COMMIT');
           return res;
         } catch (err) {
-          yield connection.query('ROLLBACK');
+          await connection.query('ROLLBACK');
           if (err.errno === 1205 || err.errno === 1213) {
             retries++;
             // console.log('retrying transaction (' + retries + ')');
-            yield wait(100);
+            await util.timeout(100);
             continue; // retry the transaction
           }
           throw err;
@@ -63,8 +63,8 @@ let KindaMySQLStore = KindaSQLStore.extend('KindaMySQLStore', function() {
     }
   });
 
-  this.close = function *() {
-    yield this.connection.end();
+  this.close = async function() {
+    await this.connection.end();
   };
 });
 

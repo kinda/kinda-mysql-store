@@ -1,68 +1,67 @@
 'use strict';
 
-require('co-mocha');
 let assert = require('chai').assert;
 let KindaMySQLStore = require('./src');
 
 suite('KindaMySQLStore', function() {
   let store = KindaMySQLStore.create({ url: 'mysql://test@localhost/test' });
 
-  suiteTeardown(function *() {
-    yield store.delRange();
+  suiteTeardown(async function() {
+    await store.delRange();
   });
 
-  test('simple put, get and del', function *() {
+  test('simple put, get and del', async function() {
     let key = ['users', 'mvila'];
-    yield store.put(key, { firstName: 'Manu', age: 42 });
-    let user = yield store.get(key);
+    await store.put(key, { firstName: 'Manu', age: 42 });
+    let user = await store.get(key);
     assert.deepEqual(user, { firstName: 'Manu', age: 42 });
-    let hasBeenDeleted = yield store.del(key);
+    let hasBeenDeleted = await store.del(key);
     assert.isTrue(hasBeenDeleted);
-    user = yield store.get(key, { errorIfMissing: false });
+    user = await store.get(key, { errorIfMissing: false });
     assert.isUndefined(user);
-    hasBeenDeleted = yield store.del(key, { errorIfMissing: false });
+    hasBeenDeleted = await store.del(key, { errorIfMissing: false });
     assert.isFalse(hasBeenDeleted);
   });
 
-  test('change made inside a commited transaction', function *() {
+  test('change made inside a commited transaction', async function() {
     let key = ['users', 'mvila'];
     let user = { firstName: 'Manu', age: 42 };
-    yield store.put(key, user);
+    await store.put(key, user);
     assert.isFalse(store.isInsideTransaction);
-    yield store.transaction(function *(tr) {
+    await store.transaction(async function(tr) {
       assert.isTrue(tr.isInsideTransaction);
-      user = yield tr.get(key);
+      user = await tr.get(key);
       assert.strictEqual(user.firstName, 'Manu');
       user.firstName = 'Vince';
-      yield tr.put(key, user);
-      user = yield tr.get(key);
+      await tr.put(key, user);
+      user = await tr.get(key);
       assert.strictEqual(user.firstName, 'Vince');
     });
-    user = yield store.get(key);
+    user = await store.get(key);
     assert.strictEqual(user.firstName, 'Vince');
-    yield store.del(key);
+    await store.del(key);
   });
 
-  test('change made inside an aborted transaction', function *() {
+  test('change made inside an aborted transaction', async function() {
     let key = ['users', 'mvila'];
     let user = { firstName: 'Manu', age: 42 };
-    yield store.put(key, user);
+    await store.put(key, user);
     try {
       assert.isFalse(store.isInsideTransaction);
-      yield store.transaction(function *(tr) {
+      await store.transaction(async function(tr) {
         assert.isTrue(tr.isInsideTransaction);
-        user = yield tr.get(key);
+        user = await tr.get(key);
         assert.strictEqual(user.firstName, 'Manu');
         user.firstName = 'Vince';
-        yield tr.put(key, user);
-        user = yield tr.get(key);
+        await tr.put(key, user);
+        user = await tr.get(key);
         assert.strictEqual(user.firstName, 'Vince');
         throw new Error('something is wrong');
       });
     } catch (err) {
       // noop
     }
-    user = yield store.get(key);
+    user = await store.get(key);
     assert.strictEqual(user.firstName, 'Manu');
   });
 });
